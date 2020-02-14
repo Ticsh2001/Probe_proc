@@ -78,7 +78,7 @@ def create_mass_distrib(n_bins, n_edges):
     return res/s, d_m_av
     #for i in np.arange(0,len(n_bins)):
 
-def load_ipi_probe(path,xmin, ymin,xmax,ymax):
+def load_ipi_probe(path,xmin, ymin,xmax,ymax,bins_num):
     files = (f for f in os.listdir(path) if f.endswith('.txt'))
     data = []
     for f in files:
@@ -86,7 +86,7 @@ def load_ipi_probe(path,xmin, ymin,xmax,ymax):
         for i in np.arange(0,len(temp)):
             if temp[i,0]>xmin and temp[i,0]<xmax and temp[i,1]>ymin and temp[i,1]<ymax and temp[i,2]>0.0:
                 data.append(temp[i,2]*2.0*1000000.0)                
-    [n_bins, n_edges] = np.histogram(data, bins=28)
+    [n_bins, n_edges] = np.histogram(data, bins=bins_num)
     n_bins = ipi_adapt_data(n_bins,n_edges, data)
     #kde = KernelDensity(bandwidth = 1,kernel = 'exponential')
     #kde.fit(np.asarray(data)[:,None])
@@ -165,7 +165,7 @@ def load_footprint_probe_data(path, scale_coeff):
     n_cum_data = create_freq_sum(n_bins, n_edges, False)
     return n_bins, n_edges,n_cum_data
    
-def load_ipi_conditions(conditions, names, axs,xmin,ymin,xmax,ymax):
+def load_ipi_conditions(conditions, names, axs,xmin,ymin,xmax,ymax,bins_num):
     j = 0
     colors = ['r','g','b','k']
     mins = []
@@ -173,7 +173,7 @@ def load_ipi_conditions(conditions, names, axs,xmin,ymin,xmax,ymax):
     extremum_i = []
     extremum_val = []
     for cond in conditions:
-        ipi_n_bins, ipi_n_edges, ipi_cum = load_ipi_probe(cond,xmin,ymin,xmax,ymax)
+        ipi_n_bins, ipi_n_edges, ipi_cum = load_ipi_probe(cond,xmin,ymin,xmax,ymax,bins_num[j])
         ipi_m_bins,ipi_d_m_av = create_mass_distrib(ipi_n_bins, ipi_n_edges)
         i, val = analyze_extremum(ipi_m_bins, ipi_n_edges)
         extremum_i.append(i)
@@ -194,9 +194,9 @@ f, axs = plt.subplots(1,3)
 
 ipi_conditions = []
 
-ipi_conditions.append(r'T:\POLIS\Зонд влажности\2020.02.11\2020.02.11_f5f6\Export')
-ipi_conditions.append(r'T:\POLIS\Зонд влажности\2020.02.11\2020.02.11_f9f12\Export')
-ipi_conditions.append(r'T:\POLIS\Зонд влажности\2020.02.11\2020.02.11_f3f4\Export')
+ipi_conditions.append(r'T:\POLIS\Зонд влажности\2020.02.14\2020.02.14_f5f6\Export_new')
+ipi_conditions.append(r'T:\POLIS\Зонд влажности\2020.02.14\2020.02.14_f9f12\Export_new')
+ipi_conditions.append(r'T:\POLIS\Зонд влажности\2020.02.14\2020.02.14_f3f4\Export_new')
 
 ipi_names = []
 ipi_names.append(r'f5f6 ipi')
@@ -207,34 +207,34 @@ xmin = 0.12
 xmax = 39.83
 ymin = 6.76
 ymax = 11.2
-mins, maxs,index,extr_v = load_ipi_conditions(ipi_conditions, ipi_names, axs,xmin,ymin,xmax,ymax)
+mins, maxs,index,extr_v = load_ipi_conditions(ipi_conditions, ipi_names, axs,xmin,ymin,xmax,ymax,[28,28,39])
 
+coeff = 37
+###
 
-coeff = 13.75
-n_bins, n_edges,n_cum_data = load_lmz_probe(r'V:\Стенды КВП\Эксперименты\ЛМЗ тарировка зодна\11.02.2020\f5f6',-1,-1)
+n_bins, n_edges,n_cum_data = load_lmz_probe(r'V:\Стенды КВП\Эксперименты\ЛМЗ тарировка зодна\14.02.2020\f5f6',-1,-1)
 m_bins,d_m_av = create_mass_distrib(n_bins, n_edges)
 #plot_hist(axs[0],m_bins,n_edges[:]/n_edges[-1],'plot','r','lmz f3f4')
 i, val = analyze_extremum(m_bins, n_edges)
-c = extr_v[0]/val
-print(c)
+c1 = extr_v[0]/val
 plot_hist(axs[0],m_bins,n_edges*coeff,'plot','r','lmz f5f6')
-print(np.sum(m_bins))
 
-n_bins, n_edges,n_cum_data = load_lmz_probe(r'V:\Стенды КВП\Эксперименты\ЛМЗ тарировка зодна\11.02.2020\f9f12',-1,-1)
+
+n_bins, n_edges,n_cum_data = load_lmz_probe(r'V:\Стенды КВП\Эксперименты\ЛМЗ тарировка зодна\14.02.2020\f9f12',-1,-1)
 m_bins,d_m_av = create_mass_distrib(n_bins, n_edges)
 #plot_hist(axs[1], m_bins,n_edges[:]/n_edges[-1],'plot','g','lmz f5f6')
 i, val = analyze_extremum(m_bins, n_edges)
-c = extr_v[1]/val
-print(c)
+c2 = extr_v[1]/val
 plot_hist(axs[1],m_bins,n_edges*coeff,'plot','g','lmz f9f12')
 
-n_bins, n_edges,n_cum_data = load_lmz_probe(r'V:\Стенды КВП\Эксперименты\ЛМЗ тарировка зодна\11.02.2020\f3f4',-1,-1)
+n_bins, n_edges,n_cum_data = load_lmz_probe(r'V:\Стенды КВП\Эксперименты\ЛМЗ тарировка зодна\14.02.2020\f3f4',-1,-1)
 m_bins,d_m_av = create_mass_distrib(n_bins, n_edges)
 #plot_hist(axs[2], m_bins,n_edges[:]/n_edges[-1],'plot','b','lmz f9f12')
 i, val = analyze_extremum(m_bins, n_edges)
-c = extr_v[2]/val
-print(c)
+c3 = extr_v[2]/val
+print((c1+c2)/2)
 plot_hist(axs[2],m_bins,n_edges*coeff,'plot','b','lmz f3f4')
+
 
 
 
